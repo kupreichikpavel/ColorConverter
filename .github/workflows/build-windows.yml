@@ -1,0 +1,51 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Run tests
+        run: .\gradlew.bat clean test
+
+      - name: Build application distribution
+        run: .\gradlew.bat installDist
+
+      - name: Create Windows installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path build\jpackage
+
+          jpackage `
+            --type exe `
+            --name ColorConverter `
+            --app-version 1.0.0 `
+            --input build\install\color-converter\lib `
+            --main-jar color-converter-1.0.0.jar `
+            --main-class by.bsu.colorconverter.Launcher `
+            --dest build\jpackage `
+            --description "RGB, CMYK and LAB Color Converter" `
+            --vendor "BSU" `
+            --win-menu `
+            --win-shortcut
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: ColorConverter-Windows
+          path: build/jpackage/*.exe
