@@ -6,322 +6,372 @@ import by.bsu.colorconverter.model.LabColor;
 import by.bsu.colorconverter.model.RgbColor;
 import by.bsu.colorconverter.util.RgbRangeUtil;
 import by.bsu.colorconverter.view.ColorComponentControl;
+import by.bsu.colorconverter.view.InfoWindow;
 import by.bsu.colorconverter.view.MainView;
 import javafx.scene.paint.Color;
 
+
 public final class ColorController {
 
-    private final MainView view;
-    private boolean updating = false;
 
-    public ColorController(MainView view) {
-        this.view = view;
+  private final MainView view;
 
-        bindEvents();
-        updateFromRgb();
-    }
+  private boolean updating;
 
-    private void bindEvents() {
-        bindRgbEvents();
-        bindCmykEvents();
-        bindLabEvents();
-        bindColorPicker();
-    }
 
-    private void bindRgbEvents() {
-        addListener(
-            view.getRedControl(),
-            this::updateFromRgb
+  public ColorController(MainView view) {
+    this.view = view;
+
+    bindEvents();
+
+    updateFromRgb();
+  }
+
+
+  private void bindEvents() {
+
+    bindRgbEvents();
+
+    bindCmykEvents();
+
+    bindLabEvents();
+
+    bindColorPicker();
+
+    view.getInfoButton()
+        .setOnAction(
+            event -> InfoWindow.show()
         );
+  }
 
-        addListener(
-            view.getGreenControl(),
-            this::updateFromRgb
-        );
 
-        addListener(
-            view.getBlueControl(),
-            this::updateFromRgb
-        );
-    }
+  private void bindRgbEvents() {
 
-    private void bindCmykEvents() {
-        addListener(
-            view.getCyanControl(),
-            this::updateFromCmyk
-        );
+    addListener(
+        view.getRedControl(),
+        this::updateFromRgb
+    );
 
-        addListener(
-            view.getMagentaControl(),
-            this::updateFromCmyk
-        );
+    addListener(
+        view.getGreenControl(),
+        this::updateFromRgb
+    );
 
-        addListener(
-            view.getYellowControl(),
-            this::updateFromCmyk
-        );
+    addListener(
+        view.getBlueControl(),
+        this::updateFromRgb
+    );
+  }
 
-        addListener(
-            view.getKeyControl(),
-            this::updateFromCmyk
-        );
-    }
 
-    private void bindLabEvents() {
-        addListener(
-            view.getLControl(),
-            this::updateFromLab
-        );
+  private void bindCmykEvents() {
 
-        addListener(
-            view.getAControl(),
-            this::updateFromLab
-        );
+    addListener(
+        view.getCyanControl(),
+        this::updateFromCmyk
+    );
 
-        addListener(
-            view.getLabBControl(),
-            this::updateFromLab
-        );
-    }
+    addListener(
+        view.getMagentaControl(),
+        this::updateFromCmyk
+    );
 
-    private void bindColorPicker() {
-        view.getColorPicker().setOnAction(
+    addListener(
+        view.getYellowControl(),
+        this::updateFromCmyk
+    );
+
+    addListener(
+        view.getKeyControl(),
+        this::updateFromCmyk
+    );
+  }
+
+
+  private void bindLabEvents() {
+
+    addListener(
+        view.getLControl(),
+        this::updateFromLab
+    );
+
+    addListener(
+        view.getAControl(),
+        this::updateFromLab
+    );
+
+    addListener(
+        view.getLabBControl(),
+        this::updateFromLab
+    );
+  }
+
+
+  private void bindColorPicker() {
+
+    view.getColorPicker()
+        .setOnAction(
             event -> updateFromColorPicker()
         );
-    }
+  }
 
-    private void addListener(
-        ColorComponentControl control,
-        Runnable action
-    ) {
-        control.getSlider()
-            .valueProperty()
-            .addListener(
-                (observable, oldValue, newValue) -> action.run()
-            );
-    }
 
-    private void updateFromRgb() {
-        if (updating) {
-            return;
-        }
+  private void addListener(
+      ColorComponentControl control,
+      Runnable action
+  ) {
 
-        updating = true;
-
-        try {
-            RgbColor rgb = readRgb();
-
-            CmykColor cmyk =
-                ColorConverter.rgbToCmyk(rgb);
-
-            LabColor lab =
-                ColorConverter.rgbToLab(rgb);
-
-            setCmyk(cmyk);
-            setLab(lab);
-
-            updatePreview(rgb);
-
-            clearWarning();
-
-        } finally {
-            updating = false;
-        }
-    }
-
-    private void updateFromCmyk() {
-        if (updating) {
-            return;
-        }
-
-        updating = true;
-
-        try {
-            CmykColor cmyk = readCmyk();
-
-            RgbColor rgb =
-                ColorConverter.cmykToRgb(cmyk);
-
-            LabColor lab =
-                ColorConverter.rgbToLab(rgb);
-
-            setRgb(rgb);
-            setLab(lab);
-
-            updatePreview(rgb);
-
-            clearWarning();
-
-        } finally {
-            updating = false;
-        }
-    }
-
-    private void updateFromLab() {
-        if (updating) {
-            return;
-        }
-
-        updating = true;
-
-        try {
-            LabColor lab = readLab();
-
-            RgbColor calculatedRgb =
-                ColorConverter.labToRgb(lab);
-
-            boolean clipped =
-                RgbRangeUtil.isOutsideRange(calculatedRgb);
-
-            RgbColor rgb =
-                RgbRangeUtil.clamp(calculatedRgb);
-
-            CmykColor cmyk =
-                ColorConverter.rgbToCmyk(rgb);
-
-            setRgb(rgb);
-            setCmyk(cmyk);
-
-            updatePreview(rgb);
-
-            if (clipped) {
-                showClippingWarning();
-            } else {
-                clearWarning();
-            }
-
-        } finally {
-            updating = false;
-        }
-    }
-
-    private void updateFromColorPicker() {
-        if (updating) {
-            return;
-        }
-
-        updating = true;
-
-        try {
-            Color selectedColor =
-                view.getColorPicker().getValue();
-
-            RgbColor rgb = new RgbColor(
-                Math.round(selectedColor.getRed() * 255.0),
-                Math.round(selectedColor.getGreen() * 255.0),
-                Math.round(selectedColor.getBlue() * 255.0)
-            );
-
-            CmykColor cmyk =
-                ColorConverter.rgbToCmyk(rgb);
-
-            LabColor lab =
-                ColorConverter.rgbToLab(rgb);
-
-            setRgb(rgb);
-            setCmyk(cmyk);
-            setLab(lab);
-
-            updatePreview(rgb);
-
-            clearWarning();
-
-        } finally {
-            updating = false;
-        }
-    }
-
-    private RgbColor readRgb() {
-        return new RgbColor(
-            view.getRedControl().getValue(),
-            view.getGreenControl().getValue(),
-            view.getBlueControl().getValue()
+    control.getSlider()
+        .valueProperty()
+        .addListener(
+            (observable, oldValue, newValue) ->
+                action.run()
         );
+  }
+
+
+  private void updateFromRgb() {
+
+    if (updating) {
+      return;
     }
 
-    private CmykColor readCmyk() {
-        return new CmykColor(
-            view.getCyanControl().getValue(),
-            view.getMagentaControl().getValue(),
-            view.getYellowControl().getValue(),
-            view.getKeyControl().getValue()
-        );
+    updating = true;
+
+    try {
+
+      RgbColor rgb = readRgb();
+
+      setCmyk(
+          ColorConverter.rgbToCmyk(rgb)
+      );
+
+      setLab(
+          ColorConverter.rgbToLab(rgb)
+      );
+
+      updatePreview(rgb);
+
+      view.setWarning("");
+
+    } finally {
+
+      updating = false;
+    }
+  }
+
+
+  private void updateFromCmyk() {
+
+    if (updating) {
+      return;
     }
 
-    private LabColor readLab() {
-        return new LabColor(
-            view.getLControl().getValue(),
-            view.getAControl().getValue(),
-            view.getLabBControl().getValue()
-        );
+    updating = true;
+
+    try {
+
+      CmykColor cmyk =
+          readCmyk();
+
+      RgbColor rgb =
+          ColorConverter.cmykToRgb(cmyk);
+
+      setRgb(rgb);
+
+      setLab(
+          ColorConverter.rgbToLab(rgb)
+      );
+
+      updatePreview(rgb);
+
+      view.setWarning("");
+
+    } finally {
+
+      updating = false;
+    }
+  }
+
+
+  private void updateFromLab() {
+
+    if (updating) {
+      return;
     }
 
-    private void setRgb(RgbColor rgb) {
-        view.getRedControl()
-            .setValue(rgb.red());
+    updating = true;
 
-        view.getGreenControl()
-            .setValue(rgb.green());
+    try {
 
-        view.getBlueControl()
-            .setValue(rgb.blue());
-    }
+      LabColor lab =
+          readLab();
 
-    private void setCmyk(CmykColor cmyk) {
-        view.getCyanControl()
-            .setValue(cmyk.cyan());
+      RgbColor calculated =
+          ColorConverter.labToRgb(lab);
 
-        view.getMagentaControl()
-            .setValue(cmyk.magenta());
+      boolean clipped =
+          RgbRangeUtil.isOutsideRange(calculated);
 
-        view.getYellowControl()
-            .setValue(cmyk.yellow());
+      RgbColor rgb =
+          RgbRangeUtil.clamp(calculated);
 
-        view.getKeyControl()
-            .setValue(cmyk.key());
-    }
+      setRgb(rgb);
 
-    private void setLab(LabColor lab) {
-        view.getLControl()
-            .setValue(lab.l());
+      setCmyk(
+          ColorConverter.rgbToCmyk(rgb)
+      );
 
-        view.getAControl()
-            .setValue(lab.a());
+      updatePreview(rgb);
 
-        view.getLabBControl()
-            .setValue(lab.b());
-    }
+      if (clipped) {
 
-    private void updatePreview(RgbColor rgb) {
-        RgbColor safeRgb =
-            RgbRangeUtil.clamp(rgb);
-
-        int red = (int) Math.round(safeRgb.red());
-        int green = (int) Math.round(safeRgb.green());
-        int blue = (int) Math.round(safeRgb.blue());
-
-        Color color = Color.rgb(
-            red,
-            green,
-            blue
-        );
-
-        view.setPreviewColor(color);
-
-        view.getColorPicker()
-            .setValue(color);
-    }
-
-    private void showClippingWarning() {
         view.setWarning(
-            "Предупреждение: выбранный цвет LAB "
-                + "выходит за цветовой диапазон RGB. "
-                + "Некоторые значения RGB были ограничены "
-                + "диапазоном 0–255."
+            "LAB цвет выходит за диапазон RGB. Значения RGB были ограничены."
         );
+
+      } else {
+
+        view.setWarning("");
+      }
+
+
+    } finally {
+
+      updating = false;
+    }
+  }
+
+
+  private void updateFromColorPicker() {
+
+    if (updating) {
+      return;
     }
 
-    private void clearWarning() {
-        view.setWarning("");
+    updating = true;
+
+    try {
+
+      Color color =
+          view.getColorPicker()
+              .getValue();
+
+      RgbColor rgb =
+          new RgbColor(
+              color.getRed() * 255,
+              color.getGreen() * 255,
+              color.getBlue() * 255
+          );
+
+      setRgb(rgb);
+
+      setCmyk(
+          ColorConverter.rgbToCmyk(rgb)
+      );
+
+      setLab(
+          ColorConverter.rgbToLab(rgb)
+      );
+
+      updatePreview(rgb);
+
+
+    } finally {
+
+      updating = false;
     }
+  }
+
+
+  private RgbColor readRgb() {
+
+    return new RgbColor(
+        view.getRedControl().getValue(),
+        view.getGreenControl().getValue(),
+        view.getBlueControl().getValue()
+    );
+  }
+
+
+  private CmykColor readCmyk() {
+
+    return new CmykColor(
+        view.getCyanControl().getValue(),
+        view.getMagentaControl().getValue(),
+        view.getYellowControl().getValue(),
+        view.getKeyControl().getValue()
+    );
+  }
+
+
+  private LabColor readLab() {
+
+    return new LabColor(
+        view.getLControl().getValue(),
+        view.getAControl().getValue(),
+        view.getLabBControl().getValue()
+    );
+  }
+
+
+  private void setRgb(RgbColor rgb) {
+
+    view.getRedControl()
+        .setValue(rgb.red());
+
+    view.getGreenControl()
+        .setValue(rgb.green());
+
+    view.getBlueControl()
+        .setValue(rgb.blue());
+  }
+
+
+  private void setCmyk(CmykColor cmyk) {
+
+    view.getCyanControl()
+        .setValue(cmyk.cyan());
+
+    view.getMagentaControl()
+        .setValue(cmyk.magenta());
+
+    view.getYellowControl()
+        .setValue(cmyk.yellow());
+
+    view.getKeyControl()
+        .setValue(cmyk.key());
+  }
+
+
+  private void setLab(LabColor lab) {
+
+    view.getLControl()
+        .setValue(lab.l());
+
+    view.getAControl()
+        .setValue(lab.a());
+
+    view.getLabBControl()
+        .setValue(lab.b());
+  }
+
+
+  private void updatePreview(RgbColor rgb) {
+
+    RgbColor safe =
+        RgbRangeUtil.clamp(rgb);
+
+    Color color =
+        Color.rgb(
+            (int) safe.red(),
+            (int) safe.green(),
+            (int) safe.blue()
+        );
+
+    view.setPreviewColor(color);
+
+    view.getColorPicker()
+        .setValue(color);
+  }
 }
