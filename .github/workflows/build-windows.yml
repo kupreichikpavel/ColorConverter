@@ -10,6 +10,15 @@ jobs:
   build-windows:
     runs-on: windows-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: lab1-color-converter
+            app-name: ColorConverter
+            main-class: by.bsu.colorconverter.Launcher
+            description: "RGB, CMYK and LAB Color Converter"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,25 +30,28 @@ jobs:
           java-version: '21'
 
       - name: Run tests
-        run: .\gradlew.bat clean test
+        run: .\gradlew.bat :${{ matrix.project }}:clean :${{ matrix.project }}:test
 
       - name: Build application distribution
-        run: .\gradlew.bat installDist
+        run: .\gradlew.bat :${{ matrix.project }}:installDist
 
       - name: Create Windows installer
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path build\jpackage
+          $project = "${{ matrix.project }}"
+          $lib = "$project\build\install\$project\lib"
+          $dest = "$project\build\jpackage"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
 
           jpackage `
             --type exe `
-            --name ColorConverter `
+            --name "${{ matrix.app-name }}" `
             --app-version 1.0.0 `
-            --input build\install\color-converter\lib `
-            --main-jar color-converter-1.0.0.jar `
-            --main-class by.bsu.colorconverter.Launcher `
-            --dest build\jpackage `
-            --description "RGB, CMYK and LAB Color Converter" `
+            --input $lib `
+            --main-jar "$project-1.0.0.jar" `
+            --main-class "${{ matrix.main-class }}" `
+            --dest $dest `
+            --description "${{ matrix.description }}" `
             --vendor "BSU" `
             --win-menu `
             --win-shortcut
@@ -47,5 +59,5 @@ jobs:
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: ColorConverter-Windows
-          path: build/jpackage/*.exe
+          name: ${{ matrix.app-name }}-Windows
+          path: ${{ matrix.project }}/build/jpackage/*.exe

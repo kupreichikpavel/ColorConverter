@@ -1,1 +1,3 @@
-rootProject.name = 'color-converter'
+rootProject.name = 'computer-graphics-labs'
+
+include 'lab1-color-converter'
