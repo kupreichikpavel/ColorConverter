@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'by.bsu'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// JavaFX — интерфейс и превью картинки.
+javafx {
+    version = '21'
+    modules = ['javafx.controls']
+}
+
+application {
+    mainClass = 'by.bsu.imageinfo.Launcher'
+}
+
+dependencies {
+    // чтение заголовков и метаданных изображений
+    implementation 'com.drewnoakes:metadata-extractor:2.19.0'
+
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
