@@ -18,11 +18,6 @@ import javafx.scene.layout.VBox;
 
 import java.util.Map;
 
-/**
- * Правая панель: превью и все характеристики выбранного файла с пояснениями.
- * JavaFX Image используется только для показа картинки, характеристики
- * берутся из результата ручного разбора.
- */
 public final class DetailsPane extends ScrollPane {
 
     private static final double PREVIEW_WIDTH = 380;

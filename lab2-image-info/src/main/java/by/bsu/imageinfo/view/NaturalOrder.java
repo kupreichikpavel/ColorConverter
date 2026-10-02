@@ -2,11 +2,6 @@ package by.bsu.imageinfo.view;
 
 import java.util.Comparator;
 
-/**
- * «Естественный» порядок имён, как в Проводнике: img2 &lt; img10, регистр не важен.
- * Сравнение идёт по символам без создания промежуточных строк — таблица
- * сортирует сотни тысяч строк.
- */
 final class NaturalOrder implements Comparator<String> {
 
     static final NaturalOrder INSTANCE = new NaturalOrder();

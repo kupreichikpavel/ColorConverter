@@ -3,7 +3,6 @@ package by.bsu.imageinfo.model;
 import java.util.List;
 import java.util.Locale;
 
-/** Поддерживаемые форматы и их расширения. */
 public enum ImageFormat {
 
     JPEG("JPEG", true, "jpg", "jpeg", "jpe", "jfif"),
@@ -28,7 +27,6 @@ public enum ImageFormat {
         return displayName;
     }
 
-    /** Умеет ли JavaFX показать картинку этого формата (используется только для превью). */
     public boolean previewSupported() {
         return previewSupported;
     }
@@ -37,7 +35,6 @@ public enum ImageFormat {
         return extensions;
     }
 
-    /** Формат, которому соответствует расширение файла, или {@code null}. */
     public static ImageFormat fromFileName(String fileName) {
         String extension = extensionOf(fileName);
         if (extension.isEmpty()) {

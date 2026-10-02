@@ -6,6 +6,7 @@ Gradle Wrapper и CI общие для всего репозитория.
 | № | Тема | Папка |
 |---|------|-------|
 | 1 | Цветовые модели (CMYK ↔ LAB ↔ RGB) | [lab1-color-converter](lab1-color-converter) |
+| 2 | Чтение информации из графических файлов | [lab2-image-info](lab2-image-info) |
 
 ## Сборка и запуск
 

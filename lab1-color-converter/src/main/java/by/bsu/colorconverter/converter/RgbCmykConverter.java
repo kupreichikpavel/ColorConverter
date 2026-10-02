@@ -16,8 +16,6 @@ public final class RgbCmykConverter {
 
         double k = 1.0 - Math.max(r, Math.max(g, b));
 
-        // Отдельно обрабатываем чёрный цвет,
-        // потому что при K = 1 получим деление на ноль.
         if (Math.abs(k - 1.0) < 1e-10) {
             return new CmykColor(
                 0.0,

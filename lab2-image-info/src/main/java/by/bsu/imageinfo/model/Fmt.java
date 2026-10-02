@@ -4,21 +4,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Locale;
 
-/** Форматирование чисел для вывода. */
 public final class Fmt {
 
     private Fmt() {
     }
 
-    /** Число без лишних нулей: 72.0 → «72», 299.9994 → «300», 96.52 → «96.52». */
     public static String number(double value) {
         return number(value, 2);
     }
 
-    /**
-     * Разрешение: до десятых. Пересчёт из пикселей на метр даёт «хвосты»
-     * (3780 пикс/м = 96.012 dpi), которые не несут смысла.
-     */
     public static String dpi(double value) {
         return number(value, 1);
     }

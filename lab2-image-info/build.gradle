@@ -17,7 +17,6 @@ java {
     }
 }
 
-// JavaFX — интерфейс и превью картинки.
 javafx {
     version = '21'
     modules = ['javafx.controls']
@@ -28,7 +27,6 @@ application {
 }
 
 dependencies {
-    // чтение заголовков и метаданных изображений
     implementation 'com.drewnoakes:metadata-extractor:2.19.0'
 
     testImplementation platform('org.junit:junit-bom:5.11.4')

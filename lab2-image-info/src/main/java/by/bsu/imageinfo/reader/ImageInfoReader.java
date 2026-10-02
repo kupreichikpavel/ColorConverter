@@ -34,15 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
-/**
- * Чтение характеристик изображения библиотекой metadata-extractor.
- *
- * <p>Библиотека сама определяет формат по сигнатуре в первых байтах файла
- * ({@link FileTypeDetector}) и читает заголовки формата, не декодируя пиксели:
- * у JPEG — сегменты до начала сжатых данных, у PNG — чанки, у TIFF — каталоги IFD.
- * Этот класс выбирает из её «директорий» нужные значения и переводит их в
- * {@link ImageInfo}. Потокобезопасен: состояния не хранит.</p>
- */
 public final class ImageInfoReader {
 
     private static final double INCH_IN_METERS = 0.0254;
@@ -75,8 +66,6 @@ public final class ImageInfoReader {
                         + "по сигнатуре это " + format.displayName());
             }
 
-            // RAW-форматы камер (ARW, CR2, NEF, ORF, RW2) — это TIFF-контейнеры с той же сигнатурой.
-            // Детектор библиотеки по первым байтам может принять обычный TIFF за ARW, поэтому читаем как TIFF.
             FileType readAs = format == ImageFormat.TIFF ? FileType.Tiff : type;
             Metadata metadata = ImageMetadataReader.readMetadata(in, size, readAs);
             switch (format) {
@@ -106,8 +95,6 @@ public final class ImageInfoReader {
         }
         return b.parseNanos(System.nanoTime() - started).build();
     }
-
-    // ------------------------------------------------------------------ JPEG
 
     private static void readJpeg(Metadata metadata, ImageInfo.Builder b) {
         JpegDirectory jpeg = metadata.getFirstDirectoryOfType(JpegDirectory.class);
@@ -144,11 +131,9 @@ public final class ImageInfoReader {
             try {
                 b.extra(Glossary.JPEG_HUFFMAN, huffman.getNumberOfTables());
             } catch (com.drew.metadata.MetadataException ignored) {
-                // таблиц нет — не показываем
             }
         }
 
-        // Разрешение: JFIF (если заданы единицы) имеет приоритет, иначе Exif
         JfifDirectory jfif = metadata.getFirstDirectoryOfType(JfifDirectory.class);
         ExifIFD0Directory exif = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
         boolean resolved = false;
@@ -218,8 +203,6 @@ public final class ImageInfoReader {
         return scheme + " (Y " + y.getHorizontalSamplingFactor() + "×" + y.getVerticalSamplingFactor()
                 + ", Cb/Cr " + cb.getHorizontalSamplingFactor() + "×" + cb.getVerticalSamplingFactor() + ")";
     }
-
-    // ------------------------------------------------------------------ PNG
 
     private static void readPng(Metadata metadata, ImageInfo.Builder b) {
         b.resolutionNote("не указано (нет чанка pHYs)");
@@ -293,8 +276,6 @@ public final class ImageInfoReader {
         };
     }
 
-    // ------------------------------------------------------------------ GIF
-
     private static void readGif(Metadata metadata, ImageInfo.Builder b) {
         GifHeaderDirectory header = metadata.getFirstDirectoryOfType(GifHeaderDirectory.class);
         if (header == null) {
@@ -306,8 +287,6 @@ public final class ImageInfoReader {
         b.resolutionNote("формат GIF не хранит разрешение");
         b.extra(Glossary.GIF_VERSION, header.getString(GifHeaderDirectory.TAG_GIF_FORMAT_VERSION));
 
-        // Глубину считаем по размеру палитры: 2^N цветов → N бит на пиксель.
-        // Тег библиотеки TAG_BITS_PER_PIXEL — это поле Color Resolution, а не реальная глубина.
         Boolean global = header.getBooleanObject(GifHeaderDirectory.TAG_HAS_GLOBAL_COLOR_TABLE);
         Integer tableSize = header.getInteger(GifHeaderDirectory.TAG_COLOR_TABLE_SIZE);
         int depth = 0;
@@ -350,8 +329,6 @@ public final class ImageInfoReader {
         }
         b.extra(Glossary.TRANSPARENCY, transparent ? "есть прозрачный цвет" : "нет");
     }
-
-    // ------------------------------------------------------------------ BMP
 
     private static void readBmp(Metadata metadata, ImageInfo.Builder b) {
         BmpHeaderDirectory bmp = metadata.getFirstDirectoryOfType(BmpHeaderDirectory.class);
@@ -425,8 +402,6 @@ public final class ImageInfoReader {
         };
     }
 
-    // ------------------------------------------------------------------ TIFF
-
     private static void readTiff(Metadata metadata, ImageInfo.Builder b) {
         ExifIFD0Directory ifd = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
         if (ifd == null) {
@@ -499,8 +474,6 @@ public final class ImageInfoReader {
         };
     }
 
-    // ------------------------------------------------------------------ PCX
-
     private static void readPcx(Metadata metadata, ImageInfo.Builder b) {
         PcxDirectory pcx = metadata.getFirstDirectoryOfType(PcxDirectory.class);
         if (pcx == null) {
@@ -521,7 +494,6 @@ public final class ImageInfoReader {
             b.colorModel(bits == 8 && planes >= 3 ? "RGB (по плоскости на канал)" : "индексированный (палитра)");
             b.extra(Glossary.PCX_PLANES, planes);
         }
-        // PcxReader библиотеки принимает только файлы с байтом кодирования 1 (RLE)
         b.compression("RLE (PCX)");
 
         Integer hDpi = pcx.getInteger(PcxDirectory.TAG_HORIZONTAL_DPI);
@@ -548,9 +520,6 @@ public final class ImageInfoReader {
         }
     }
 
-    // ------------------------------------------------------------------ общее
-
-    /** Разрешение из тегов TIFF/Exif 282, 283, 296. @return true, если dpi установлено */
     private static boolean exifResolution(Directory ifd, ImageInfo.Builder b) {
         Rational x = ifd.getRational(ExifIFD0Directory.TAG_X_RESOLUTION);
         Rational y = ifd.getRational(ExifIFD0Directory.TAG_Y_RESOLUTION);
@@ -617,7 +586,6 @@ public final class ImageInfoReader {
         };
     }
 
-    /** Описание файла, который не является изображением поддерживаемого формата. */
     private static String describeUnknown(FileType type, InputStream in) throws IOException {
         if (type != FileType.Unknown) {
             return "Формат " + type.getName() + " (" + type.getLongName() + ") не входит в задание";

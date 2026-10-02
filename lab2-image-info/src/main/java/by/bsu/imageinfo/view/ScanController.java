@@ -30,25 +30,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Связывает интерфейс со сканированием.
- *
- * <p>Сканирование идёт в фоновых потоках ({@link ScanJob}). UI-поток каждые
- * ~50 мс забирает из очереди готовые результаты пачкой и обновляет прогресс-бар.
- * Таблица пересобирается не на каждый файл, а не чаще раза в 100–400 мс:
- * фильтр + одна сортировка O(n log n) + {@code setAll}. Инкрементальная
- * вставка в SortedList на сотнях тысяч строк квадратична и «вешает» UI,
- * поэтому она не используется.</p>
- */
 public final class ScanController {
 
     private static final long REFRESH_NANOS = 50_000_000L;
     private static final int MAX_BATCH = 20_000;
 
     private final MainView view;
-    /** Все результаты текущего сканирования. */
     private final List<ImageInfo> all = new ArrayList<>();
-    /** То, что показано в таблице (после фильтра; сортирует сама таблица). */
     private final ObservableList<ImageInfo> visible = FXCollections.observableArrayList();
     private final Map<FileStatus, Integer> counters = new EnumMap<>(FileStatus.class);
     private final List<ImageInfo> batch = new ArrayList<>();
@@ -100,8 +88,6 @@ public final class ScanController {
         updateCounters();
     }
 
-    // ---------------------------------------------------------------- действия
-
     private void chooseFolder() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Папка с изображениями");
@@ -150,14 +136,10 @@ public final class ScanController {
         event.consume();
     }
 
-    /** Сканирование путей, переданных при запуске. */
     public void scan(List<Path> roots) {
         startScan(roots, true);
     }
 
-    /**
-     * @param replace очистить таблицу перед сканированием (папка) или дополнить её (отдельные файлы)
-     */
     private void startScan(List<Path> roots, boolean replace) {
         if (job != null && !job.isFinished()) {
             return;
@@ -198,8 +180,6 @@ public final class ScanController {
         updateCounters();
     }
 
-    // ---------------------------------------------------------------- обновление UI
-
     private void pullResults() {
         if (job == null) {
             refresher.stop();
@@ -216,7 +196,6 @@ public final class ScanController {
             updateCounters();
         }
         long now = System.nanoTime();
-        // пересборка не чаще, чем раз в 5× её собственную длительность (не меньше 150 мс)
         long interval = Math.max(150_000_000L, lastRebuildCost * 5);
         if (dirty && now - lastRebuild >= interval) {
             rebuild();
@@ -281,7 +260,6 @@ public final class ScanController {
         updateShown();
     }
 
-    /** Пересобирает видимый список: фильтр, затем сортировка по текущей колонке таблицы. */
     private void rebuild() {
         long started = System.nanoTime();
         dirty = false;
@@ -335,8 +313,6 @@ public final class ScanController {
                 ? "Файлов: " + all.size()
                 : "Показано " + visible.size() + " из " + all.size());
     }
-
-    // ---------------------------------------------------------------- экспорт
 
     private void exportCsv() {
         if (view.table.getItems().isEmpty()) {

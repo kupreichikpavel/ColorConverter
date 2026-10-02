@@ -7,13 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.zip.CRC32;
 
-/** Минимальные корректные файлы всех форматов, собранные байт за байтом по спецификациям. */
 final class TestImages {
 
     private TestImages() {
     }
 
-    /** BMP 8 бит с палитрой оттенков серого, BITMAPINFOHEADER. */
     static byte[] bmp8(int width, int height, int pixelsPerMeter) {
         int stride = (width + 3) / 4 * 4;
         int palette = 256 * 4;
@@ -30,7 +28,6 @@ final class TestImages {
         return b.array();
     }
 
-    /** BMP 24 бита без палитры. */
     static byte[] bmp24(int width, int height) {
         int stride = (width * 3 + 3) / 4 * 4;
         int offset = 54;
@@ -42,7 +39,6 @@ final class TestImages {
         return b.array();
     }
 
-    /** PNG с IHDR, (опционально) pHYs, одним IDAT и IEND. */
     static byte[] png(int width, int height, int bitDepth, int colorType, Integer pixelsPerMeter) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.writeBytes(new byte[]{(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A});
@@ -75,19 +71,15 @@ final class TestImages {
         out.writeBytes(ByteBuffer.allocate(4).putInt((int) crc.getValue()).array());
     }
 
-    /** JPEG: SOI, APP0 JFIF, DQT, SOF (baseline или progressive), SOS, немного данных, EOI. */
     static byte[] jpeg(int width, int height, int components, int dpi, boolean progressive) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xD8});
-        // APP0 JFIF
         out.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F', 'I', 'F', 0, 1, 1, 1,
                 (byte) (dpi >> 8), (byte) dpi, (byte) (dpi >> 8), (byte) dpi, 0, 0});
-        // DQT: таблица 0, все значения 1 (качество 100)
         out.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xDB, 0, 67, 0});
         byte[] table = new byte[64];
         Arrays.fill(table, (byte) 1);
         out.writeBytes(table);
-        // SOF
         int length = 8 + components * 3;
         out.writeBytes(new byte[]{(byte) 0xFF, (byte) (progressive ? 0xC2 : 0xC0), 0, (byte) length, 8,
                 (byte) (height >> 8), (byte) height, (byte) (width >> 8), (byte) width, (byte) components});
@@ -95,14 +87,12 @@ final class TestImages {
             int sampling = (i == 1 && components == 3) ? 0x22 : 0x11;
             out.writeBytes(new byte[]{(byte) i, (byte) sampling, (byte) (i == 1 ? 0 : 1)});
         }
-        // SOS
         out.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xDA, 0, 8, 1, 1, 0, 0, 63, 0});
         out.writeBytes(new byte[]{0x12, 0x34, 0x56, 0x78});
         out.writeBytes(new byte[]{(byte) 0xFF, (byte) 0xD9});
         return out.toByteArray();
     }
 
-    /** GIF89a с глобальной палитрой 2^bits цветов и заданным числом кадров. */
     static byte[] gif(int width, int height, int bits, int frames) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.writeBytes("GIF89a".getBytes(StandardCharsets.US_ASCII));
@@ -119,7 +109,6 @@ final class TestImages {
         return out.toByteArray();
     }
 
-    /** TIFF без сжатия, RGB 8-8-8, одна полоса, разрешение в dpi. */
     static byte[] tiff(int width, int height, int dpi, boolean littleEndian) {
         ByteOrder order = littleEndian ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
         int entries = 11;
@@ -160,7 +149,6 @@ final class TestImages {
         b.putShort((short) tag).putShort((short) 3).putInt(1).putShort((short) value).putShort((short) 0);
     }
 
-    /** PCX версии 5, 8 бит, 1 плоскость, RLE, VGA-палитра в конце. */
     static byte[] pcx8(int width, int height, int dpi) {
         int bytesPerLine = (width + 1) / 2 * 2;
         ByteArrayOutputStream out = new ByteArrayOutputStream();

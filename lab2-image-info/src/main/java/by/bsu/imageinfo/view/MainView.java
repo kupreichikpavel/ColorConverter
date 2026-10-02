@@ -31,7 +31,6 @@ import javafx.scene.layout.VBox;
 import java.util.Comparator;
 import java.util.function.Function;
 
-/** Разметка главного окна. Логика — в {@link ScanController}. */
 public final class MainView extends BorderPane {
 
     final Button openFolderButton = new Button("Открыть папку…");
@@ -137,7 +136,6 @@ public final class MainView extends BorderPane {
     @SuppressWarnings({"unchecked", "deprecation"})
     private void buildTable() {
         table.setPlaceholder(new Label("Откройте папку или перетащите сюда файлы и папки"));
-        // колонки делят ширину таблицы, горизонтальной прокрутки нет
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<ImageInfo, ImageInfo> name = column("Имя файла", 230,

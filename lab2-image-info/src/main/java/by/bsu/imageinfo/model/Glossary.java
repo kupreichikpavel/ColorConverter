@@ -3,14 +3,8 @@ package by.bsu.imageinfo.model;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Названия всех выводимых характеристик и пояснения к ним:
- * что это, зачем нужно и в каком месте файла хранится
- * (значения оттуда читает библиотека metadata-extractor).
- */
 public final class Glossary {
 
-    // ---------- основные колонки ----------
     public static final String FILE_NAME = "Имя файла";
     public static final String FORMAT = "Формат";
     public static final String IMAGE_SIZE = "Размер изображения";
@@ -21,7 +15,6 @@ public final class Glossary {
     public static final String FILE_SIZE = "Размер файла";
     public static final String STATUS = "Статус";
 
-    // ---------- общие ----------
     public static final String PALETTE_SIZE = "Размер палитры";
     public static final String INTERLACE = "Чересстрочность";
     public static final String TRANSPARENCY = "Прозрачность";
@@ -32,32 +25,26 @@ public final class Glossary {
     public static final String MAKE = "Производитель камеры";
     public static final String MODEL = "Модель камеры";
 
-    // ---------- BMP ----------
     public static final String BMP_HEADER = "Заголовок DIB";
     public static final String BMP_ROW_ORDER = "Порядок строк";
 
-    // ---------- PNG ----------
     public static final String PNG_COLOR_TYPE = "Тип цвета (color type)";
     public static final String PNG_BITS_PER_CHANNEL = "Битов на канал";
     public static final String PNG_FILTER = "Метод фильтрации";
     public static final String PNG_GAMMA = "Гамма (gAMA)";
 
-    // ---------- JPEG ----------
     public static final String JPEG_SOF = "Маркер кадра (SOF)";
     public static final String JPEG_SUBSAMPLING = "Субдискретизация цветности";
     public static final String JPEG_HUFFMAN = "Таблицы Хаффмана";
     public static final String JPEG_JFIF = "JFIF";
 
-    // ---------- GIF ----------
     public static final String GIF_VERSION = "Версия GIF";
     public static final String GIF_COLOR_RESOLUTION = "Цветовое разрешение";
     public static final String GIF_FRAMES = "Кадров";
     public static final String GIF_LOOP = "Повторов анимации";
 
-    // ---------- TIFF ----------
     public static final String TIFF_PLANAR = "Планарная конфигурация";
 
-    // ---------- PCX ----------
     public static final String PCX_VERSION = "Версия PCX";
     public static final String PCX_PLANES = "Цветовых плоскостей";
     public static final String PCX_BYTES_PER_LINE = "Байт в строке плоскости";

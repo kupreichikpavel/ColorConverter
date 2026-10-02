@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Результат разбора одного файла. Неизменяемый. */
 public final class ImageInfo {
 
     private final Path path;

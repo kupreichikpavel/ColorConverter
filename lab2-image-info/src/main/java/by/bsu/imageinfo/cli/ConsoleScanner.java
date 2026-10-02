@@ -15,10 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Консольный режим: {@code --cli <папка|файл>... [--all] [--flat] [--threads N] [--details] [--quiet]}.
- * Удобен для замера скорости и для проверки без графического интерфейса.
- */
 public final class ConsoleScanner {
 
     private ConsoleScanner() {

@@ -28,7 +28,6 @@ public final class MainApp extends Application {
         stage.setMinHeight(560);
         stage.show();
 
-        // папку или файлы можно передать аргументами (например, перетащив на ярлык программы)
         List<Path> paths = getParameters().getRaw().stream()
                 .filter(arg -> !arg.startsWith("--"))
                 .map(Path::of)

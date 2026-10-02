@@ -1,6 +1,5 @@
 package by.bsu.imageinfo.model;
 
-/** Итоговый статус проверки файла. Порядок констант — по возрастанию серьёзности. */
 public enum FileStatus {
 
     OK("OK", "OK", "ok"),
@@ -19,7 +18,6 @@ public enum FileStatus {
         this.styleClass = styleClass;
     }
 
-    /** Короткое название для колонки таблицы. */
     public String shortName() {
         return shortName;
     }

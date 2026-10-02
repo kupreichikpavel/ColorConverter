@@ -23,16 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Сканирование папки в фоне.
- *
- * <p>Отдельный поток-координатор обходит папку и отдаёт каждый файл в пул
- * рабочих потоков. Рабочий поток читает заголовки файла библиотекой
- * metadata-extractor и кладёт результат в неблокирующую очередь.
- * Интерфейс забирает результаты пачками ({@link #drainTo}) — сам он
- * никогда не ждёт диска. Класс не зависит от JavaFX и используется
- * также консольным режимом.</p>
- */
 public final class ScanJob {
 
     private final List<Path> roots;
@@ -135,7 +125,6 @@ public final class ScanJob {
         cancelled.set(true);
     }
 
-    /** Переносит накопленные результаты в список; возвращает их количество. */
     public int drainTo(List<ImageInfo> target, int max) {
         int count = 0;
         ImageInfo info;
@@ -181,7 +170,6 @@ public final class ScanJob {
         return (end - startNanos) / 1e9;
     }
 
-    /** Ожидание завершения (для консольного режима). */
     public void await() throws InterruptedException {
         while (!finished.get()) {
             Thread.sleep(20);

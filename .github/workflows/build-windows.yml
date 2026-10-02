@@ -19,6 +19,11 @@ jobs:
             main-class: by.bsu.colorconverter.Launcher
             description: "RGB, CMYK and LAB Color Converter"
 
+          - project: lab2-image-info
+            app-name: ImageInfo
+            main-class: by.bsu.imageinfo.Launcher
+            description: "Image file metadata reader"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
